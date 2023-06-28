@@ -26,6 +26,9 @@ koniec - Aplikacja kończy działanie."""
 
 account = 0
 warehouse = {}
+name = []
+prices = {}
+
 
 while True:
     print("\nDostępne komendy:\n")
@@ -62,21 +65,46 @@ while True:
                 action = print(f"Sprzedano {quantity} sztuk produktu '{name}' za {sum} zł")
             else:
                 print("Nie wystarczająca ilość produktu w magazynie")
-        if name not in warehouse:
-            print("Produkt nie istnieje w magazynie")
+            if name not in warehouse:
+                print("Produkt nie istnieje w magazynie")
 
 
     if command == "zakup":
         name = input("Wprowadź nazwę produktu: ")
         price = float(input("Wprowadź cenę: "))
         quantity = int(input("Wprowadź liczbę sztuk: "))
-#logika działania zakupu towaru, dodanie go do stanu magazynu oraz odjecie kwoty od stanu konta
+
         if account >= price * quantity:
             account -= price * quantity
 
             if name in warehouse:
                 warehouse[name] += quantity
+            else:
+                warehouse[name] = quantity
 
-            action = print(f"Zakupiono {quantity} sztuk produktu '{name}' za {price * quantity} zł")
+            prices[name] = price  # Dodanie ceny do słownika prices
+            print(f"Zakupiono {quantity} sztuk produktu '{name}' za {price * quantity} zł")
         else:
             print("Brak wystarczających środków na koncie")
+
+
+    if command == "konto":
+                print(f"Stan konta: {account}")
+
+    if command == "lista":
+
+        print("Stan magazynu:")
+
+        for name, quantity in warehouse.items():
+            price = prices[name]
+            print(f"{name}: ilość - {quantity}, cena - {price} zł")
+
+    if command == "magazyn":
+                name = input("Wprowadź nazwę produktu: ")
+                if name in warehouse:
+                    print(f"Stan magazynu dla produktu '{name}': {warehouse[name]}")
+                else:
+                    print("Produkt nie istnieje w magazynie")
+
+    elif command == "koniec":
+        break
