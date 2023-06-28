@@ -1,4 +1,3 @@
-from pprint import pprint
 """Napisz program, który będzie rejestrował operacje na koncie firmy i stan magazynu.
 
 Program po uruchomieniu wyświetla informację o dostępnych komendach:
@@ -26,9 +25,8 @@ koniec - Aplikacja kończy działanie."""
 
 account = 0
 warehouse = {}
-name = []
 prices = {}
-
+history = []
 
 while True:
     print("\nDostępne komendy:\n")
@@ -43,31 +41,32 @@ while True:
 
     command = input("Wprowadź komendę: ")
 
-    #operacja dodawania kwoty do salda
+    # operacja dodawania kwoty do salda
     if command == "saldo":
         sum = float(input("Wprowadź kwotę: "))
         account += sum
-        action = print(f"Dodano {sum} do konta")
-
-
+        action = f"Dodano {sum} do konta"
+        history.append(action)
 
     if command == "sprzedaż":
         name = input("Wprowadź nazwę produktu: ")
 
         if name in warehouse:
-            price = float(input("Wprowadź cenę: "))
+            price = prices[name]
             quantity = int(input("Wprowadź liczbę sztuk: "))
-#logika sprzedazy produktow, odjecie ze stanu magazaynu liczby towarów oraz kwoty od stanu konta
+            # logika sprzedazy produktow, odjecie ze stanu magazaynu liczby towarów oraz kwoty od stanu konta
             if warehouse[name] >= quantity:
                 warehouse[name] -= quantity
                 sum = price * quantity
                 account += sum
-                action = print(f"Sprzedano {quantity} sztuk produktu '{name}' za {sum} zł")
+                action = f"Sprzedano {quantity} sztuk produktu '{name}' za {sum} zł"
+                history.append(action)
             else:
-                print("Nie wystarczająca ilość produktu w magazynie")
-            if name not in warehouse:
-                print("Produkt nie istnieje w magazynie")
-
+                action = "Nie wystarczająca ilość produktu w magazynie"
+                history.append(action)
+        else:
+            action = "Produkt nie istnieje w magazynie"
+            history.append(action)
 
     if command == "zakup":
         name = input("Wprowadź nazwę produktu: ")
@@ -83,28 +82,59 @@ while True:
                 warehouse[name] = quantity
 
             prices[name] = price  # Dodanie ceny do słownika prices
-            print(f"Zakupiono {quantity} sztuk produktu '{name}' za {price * quantity} zł")
+            action = f"Zakupiono {quantity} sztuk produktu '{name}' za {price * quantity} zł"
+            history.append(action)
         else:
-            print("Brak wystarczających środków na koncie")
-
+            action = "Brak wystarczających środków na koncie"
+            history.append(action)
 
     if command == "konto":
-                print(f"Stan konta: {account}")
+        action = f"Stan konta: {account}"
+        history.append(action)
+        print(action)
 
     if command == "lista":
-
-        print("Stan magazynu:")
-
+        action = "Stan magazynu:"
+        history.append(action)
+        print(action)
         for name, quantity in warehouse.items():
-            price = prices[name]
-            print(f"{name}: ilość - {quantity}, cena - {price} zł")
+            if name in prices:
+                price = prices[name]
+                action = f"{name}: ilość - {quantity}, cena - {price} zł"
+                print(action)
+                history.append(action)
 
     if command == "magazyn":
-                name = input("Wprowadź nazwę produktu: ")
-                if name in warehouse:
-                    print(f"Stan magazynu dla produktu '{name}': {warehouse[name]}")
-                else:
-                    print("Produkt nie istnieje w magazynie")
+        action = "Stan magazynu:"
+        history.append(action)
+        print(action)
+        for name, quantity in warehouse.items():
+            action = f"{name}: ilość - {quantity}"
+            print(action)
+            history.append(action)
 
-    elif command == "koniec":
+    if command == "przegląd":
+        od = int(input("Podaj indeks 'od': "))
+        do = int(input("Podaj indeks 'do': "))
+
+        if not history:
+            action = "Brak zapisanych operacji."
+            history.append(action)
+            print(action)
+        elif od < 0 or do > len(history):
+            action = f"Nieprawidłowy zakres. Dostępne indeksy: od 0 do {len(history) - 1}"
+            history.append(action)
+            print(action)
+        elif od > do:
+            action = "'Od' nie może być większe niż 'do'."
+            history.append(action)
+            print(action)
+        else:
+            idx = history[od:do + 1]
+            for index, operacja in enumerate(idx):
+                action = f"[{od + index}] {operacja}"
+                history.append(action)
+                print(action)
+
+    if command == "koniec":
         break
