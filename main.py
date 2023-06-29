@@ -22,11 +22,19 @@ magazyn - Program wyświetla stan magazynu dla konkretnego produktu. Należy pod
 przegląd - Program pobiera dwie zmienne „od” i „do”, na ich podstawie wyświetla wszystkie wprowadzone akcje zapisane pod indeksami od „od” do „do”. Jeżeli użytkownik podał pustą wartość „od” lub „do”, program powinien wypisać przegląd od początku lub/i do końca. Jeżeli użytkownik podał zmienne spoza zakresu, program powinien o tym poinformować i wyświetlić liczbę zapisanych komend (żeby pozwolić użytkownikowi wybrać odpowiedni zakres).
 koniec - Aplikacja kończy działanie."""
 
+"""
+Saldo konta oraz magazyn mają zostać zapisane do pliku tekstowego, 
+a przy kolejnym uruchomieniu programu ma zostać odczytany. 
+Zapisać należy również historię operacji (przegląd), 
+która powinna być rozszerzana przy każdym kolejnym uruchomieniu programu."""
+
 
 account = 0
 warehouse = {}
 prices = {}
 history = []
+saved_dict_account = {}
+saved_dict_warehouse = {}
 
 while True:
     print("\nDostępne komendy:\n")
@@ -41,12 +49,17 @@ while True:
 
     command = input("Wprowadź komendę: ")
 
-    # operacja dodawania kwoty do salda
+    # operacja dodawania kwoty do salda i sprawdzanie czy saldo nie jest ujemne
     if command == "saldo":
         sum = float(input("Wprowadź kwotę: "))
-        account += sum
-        action = f"Dodano {sum} do konta"
-        history.append(action)
+        if account + sum < 0:
+            action = "Nie można mieć ujemnego salda!"
+            history.append(action)
+            print(action)
+        else:
+            account += sum
+            action = f"Dodano {sum} do konta"
+            history.append(action)
 
     if command == "sprzedaż":
         name = input("Wprowadź nazwę produktu: ")
