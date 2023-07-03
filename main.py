@@ -27,7 +27,7 @@ Saldo konta oraz magazyn mają zostać zapisane do pliku tekstowego,
 a przy kolejnym uruchomieniu programu ma zostać odczytany. 
 Zapisać należy również historię operacji (przegląd), 
 która powinna być rozszerzana przy każdym kolejnym uruchomieniu programu."""
-
+import pickle
 
 account = 0
 warehouse = {}
@@ -35,6 +35,7 @@ prices = {}
 history = []
 saved_dict_account = {}
 saved_dict_warehouse = {}
+
 
 while True:
     print("\nDostępne komendy:\n")
@@ -148,6 +149,41 @@ while True:
                 action = f"[{od + index}] {operacja}"
                 history.append(action)
                 print(action)
+
+
+    def save_acc():
+        with open('saldo.txt', 'wb') as file:
+            saldo = {
+                'account': account
+            }
+            pickle.dump(saldo, file)
+
+
+    def save_warehouse():
+        with open('magazyn.txt', 'wb') as file:
+            magazyn = {
+                'warehouse': warehouse
+            }
+            pickle.dump(magazyn, file)
+
+
+    def load_acc():
+        with open('saldo.txt', 'rb') as file:
+            saldo = pickle.load(file)
+            global account
+            account = saldo['account']
+
+
+    def load_warehouse():
+        with open('magazyn.txt', 'rb') as file:
+            magazyn = pickle.load(file)
+            global warehouse
+            magazyn = warehouse['warehouse']
+
+
+    # load_acc()
+    #
+    # load_warehouse()
 
     if command == "koniec":
         break
