@@ -27,14 +27,40 @@ Saldo konta oraz magazyn mają zostać zapisane do pliku tekstowego,
 a przy kolejnym uruchomieniu programu ma zostać odczytany. 
 Zapisać należy również historię operacji (przegląd), 
 która powinna być rozszerzana przy każdym kolejnym uruchomieniu programu."""
-import pickle
+import json
 
-account = 0
-warehouse = {}
+
+def save_account(account):
+    with open('saldo.txt', 'wb') as file:
+        json.dump(account, file)
+
+
+def save_warehouse(warehouse):
+    with open('magazyn.txt', 'wb') as file:
+        json.dump(warehouse, file)
+
+
+def load_account():
+    try:
+        with open('saldo.txt', 'rb') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return 0
+
+
+def load_warehouse():
+    try:
+        with open('magazyn.txt', 'rb') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+
+account = load_account()
+warehouse = load_warehouse()
 prices = {}
 history = []
-saved_dict_account = {}
-saved_dict_warehouse = {}
+
 
 
 while True:
@@ -52,138 +78,101 @@ while True:
 
     # operacja dodawania kwoty do salda i sprawdzanie czy saldo nie jest ujemne
     if command == "saldo":
-        sum = float(input("Wprowadź kwotę: "))
-        if account + sum < 0:
-            action = "Nie można mieć ujemnego salda!"
+        amount = float(input("Wprowadź kwotę: "))
+        if account + amount < 0:
+            action = print("Nie można mieć ujemnego salda!")
             history.append(action)
             print(action)
         else:
-            account += sum
-            action = f"Dodano {sum} do konta"
+            account += amount
+            action = print(f"Dodano {amount} do konta")
             history.append(action)
+            save_account(account)
 
-    if command == "sprzedaż":
+    elif command == "sprzedaż":
         name = input("Wprowadź nazwę produktu: ")
-
         if name in warehouse:
             price = prices[name]
             quantity = int(input("Wprowadź liczbę sztuk: "))
-            # logika sprzedazy produktow, odjecie ze stanu magazaynu liczby towarów oraz kwoty od stanu konta
             if warehouse[name] >= quantity:
                 warehouse[name] -= quantity
-                sum = price * quantity
-                account += sum
-                action = f"Sprzedano {quantity} sztuk produktu '{name}' za {sum} zł"
+                total_price = price * quantity
+                account += total_price
+                action = f"Sprzedano {quantity} sztuk produktu '{name}' za {total_price} zł"
                 history.append(action)
             else:
-                action = "Nie wystarczająca ilość produktu w magazynie"
+                action = print("Nie wystarczająca ilość produktu w magazynie")
                 history.append(action)
         else:
-            action = "Produkt nie istnieje w magazynie"
+            action = print("Produkt nie istnieje w magazynie")
             history.append(action)
 
-    if command == "zakup":
+    elif command == "zakup":
         name = input("Wprowadź nazwę produktu: ")
         price = float(input("Wprowadź cenę: "))
         quantity = int(input("Wprowadź liczbę sztuk: "))
 
         if account >= price * quantity:
             account -= price * quantity
-
             if name in warehouse:
                 warehouse[name] += quantity
             else:
                 warehouse[name] = quantity
-
-            prices[name] = price  # Dodanie ceny do słownika prices
-            action = f"Zakupiono {quantity} sztuk produktu '{name}' za {price * quantity} zł"
+            prices[name] = price
+            action = print(f"Zakupiono {quantity} sztuk produktu '{name}' za {price * quantity} zł")
             history.append(action)
+            save_warehouse(warehouse)
         else:
-            action = "Brak wystarczających środków na koncie"
+            action = print("Brak wystarczających środków na koncie")
             history.append(action)
 
-    if command == "konto":
-        action = f"Stan konta: {account}"
+    elif command == "konto":
+        action = print(f"Stan konta: {account}")
         history.append(action)
         print(action)
 
-    if command == "lista":
+    elif command == "lista":
         action = "Stan magazynu:"
         history.append(action)
         print(action)
         for name, quantity in warehouse.items():
             if name in prices:
                 price = prices[name]
-                action = f"{name}: ilość - {quantity}, cena - {price} zł"
+                action = print(f"{name}: ilość - {quantity}, cena - {price} zł")
                 print(action)
                 history.append(action)
 
-    if command == "magazyn":
+    elif command == "magazyn":
         action = "Stan magazynu:"
         history.append(action)
         print(action)
         for name, quantity in warehouse.items():
-            action = f"{name}: ilość - {quantity}"
+            action = print(f"{name}: ilość - {quantity}")
             print(action)
             history.append(action)
 
-    if command == "przegląd":
-        od = int(input("Podaj indeks 'od': "))
-        do = int(input("Podaj indeks 'do': "))
+    elif command == "przegląd":
+        start_index = int(input("Podaj indeks 'od': "))
+        end_index = int(input("Podaj indeks 'do': "))
 
         if not history:
             action = "Brak zapisanych operacji."
             history.append(action)
             print(action)
-        elif od < 0 or do > len(history):
-            action = f"Nieprawidłowy zakres. Dostępne indeksy: od 0 do {len(history) - 1}"
+        elif start_index < 0 or end_index >= len(history):
+            action = print(f"Nieprawidłowy zakres. Dostępne indeksy: od 0 do {len(history) - 1}")
             history.append(action)
             print(action)
-        elif od > do:
-            action = "'Od' nie może być większe niż 'do'."
+        elif start_index > end_index:
+            action = print("'Od' nie może być większe niż 'do'.")
             history.append(action)
             print(action)
         else:
-            idx = history[od:do + 1]
-            for index, operacja in enumerate(idx):
-                action = f"[{od + index}] {operacja}"
+            idx = history[start_index:end_index + 1]
+            for index, operation in enumerate(idx):
+                action = print(f"[{start_index + index}] {operation}")
                 history.append(action)
                 print(action)
 
-
-    def save_acc():
-        with open('saldo.txt', 'wb') as file:
-            saldo = {
-                'account': account
-            }
-            pickle.dump(saldo, file)
-
-
-    def save_warehouse():
-        with open('magazyn.txt', 'wb') as file:
-            magazyn = {
-                'warehouse': warehouse
-            }
-            pickle.dump(magazyn, file)
-
-
-    def load_acc():
-        with open('saldo.txt', 'rb') as file:
-            saldo = pickle.load(file)
-            global account
-            account = saldo['account']
-
-
-    def load_warehouse():
-        with open('magazyn.txt', 'rb') as file:
-            magazyn = pickle.load(file)
-            global warehouse
-            magazyn = warehouse['warehouse']
-
-
-    # load_acc()
-    #
-    # load_warehouse()
-
-    if command == "koniec":
+    elif command == "koniec":
         break
